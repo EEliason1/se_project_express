@@ -17,7 +17,7 @@ const getItems = (req, res) => {
 const createItem = (req, res) => {
   console.log(req.user._id);
 
-  const { name, weather, imageUrl, owner } = req.body;
+  const { name, weather, imageUrl } = req.body;
 
   Item.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
@@ -44,7 +44,7 @@ const deleteItem = (req, res) => {
       console.error(err);
       if (err.name === "CastError") {
         return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });
@@ -65,7 +65,7 @@ const likeItem = (req, res) => {
       console.error(err);
       if (err.name === "CastError") {
         return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });
@@ -86,7 +86,7 @@ const dislikeItem = (req, res) => {
       console.error(err);
       if (err.name === "CastError") {
         return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });

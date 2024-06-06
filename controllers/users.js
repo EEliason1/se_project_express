@@ -12,7 +12,7 @@ const getUsers = (req, res) => {
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });
@@ -30,7 +30,7 @@ const getUser = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });

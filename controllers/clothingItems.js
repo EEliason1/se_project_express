@@ -1,9 +1,9 @@
-const Item = require("../models/clothingItem.js");
+const Item = require("../models/clothingItem");
 const {
   BAD_INPUT_ERROR_CODE,
   NO_RES_ERROR_CODE,
   DEFAULT_ERROR_CODE,
-} = require("../utils/errors.js");
+} = require("../utils/errors");
 
 const getItems = (req, res) => {
   Item.find({})

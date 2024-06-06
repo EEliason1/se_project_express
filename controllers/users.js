@@ -1,9 +1,9 @@
-const User = require("../models/user.js");
+const User = require("../models/user");
 const {
   BAD_INPUT_ERROR_CODE,
   NO_RES_ERROR_CODE,
   DEFAULT_ERROR_CODE,
-} = require("../utils/errors.js");
+} = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})

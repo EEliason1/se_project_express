@@ -1,3 +1,3 @@
-const JWT_SECRET = 0;
+const JWT_SECRET = "temp-secret";
 
 module.exports = { JWT_SECRET };

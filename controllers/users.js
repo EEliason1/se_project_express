@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const {
   BAD_INPUT_ERROR_CODE,
@@ -42,29 +43,38 @@ const getCurrentUser = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  bcrypt.hash(password, 10).then((hash) => {
-    User.create({ name, avatar, email, password: hash })
-      .then((user) => {
-        const userObj = user.toObject();
-        delete userObj.password;
-        res.status(201).send(userObj);
-      })
-      .catch((err) => {
-        console.error(err);
-        if (err.name === "ValidationError") {
-          return res
-            .status(BAD_INPUT_ERROR_CODE)
-            .send({ message: "Invalid data." });
-        }
-        if (err.code === 11000) {
-          console.error(err);
-          return res.status(409).send({ message: "Email already in use." });
-        }
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
         return res
-          .status(DEFAULT_ERROR_CODE)
-          .send({ message: "An error has occurred on the server." });
-      });
-  });
+          .status(409)
+          .send({ message: "A user with that email already exists." });
+      }
+      return bcrypt.hash(password, 10);
+    })
+    .then((hash) => {
+      User.create({ name, avatar, email, password: hash })
+        .then((user) => {
+          const userObj = user.toObject();
+          delete userObj.password;
+          res.status(201).send(userObj);
+        })
+        .catch((err) => {
+          console.error(err);
+          if (err.name === "ValidationError") {
+            return res
+              .status(BAD_INPUT_ERROR_CODE)
+              .send({ message: "Invalid data." });
+          }
+          if (err.code === 11000) {
+            console.error(err);
+            return res.status(409).send({ message: "Email already in use." });
+          }
+          return res
+            .status(DEFAULT_ERROR_CODE)
+            .send({ message: "An error has occurred on the server." });
+        });
+    });
 };
 
 const login = (req, res) => {
@@ -73,11 +83,19 @@ const login = (req, res) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       console.log(user);
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      res.send({
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        }),
       });
     })
     .catch((err) => {
+      console.log(err);
+      if (!password || !email) {
+        return res
+          .status(BAD_INPUT_ERROR_CODE)
+          .send({ message: "Invalid data." });
+      }
       res.status(401).send({ message: err.message });
     });
 };

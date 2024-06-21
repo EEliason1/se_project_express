@@ -1,6 +1,7 @@
 const Item = require("../models/clothingItem");
 const {
   BAD_INPUT_ERROR_CODE,
+  FORBIDDEN_ERROR_CODE,
   NO_RES_ERROR_CODE,
   DEFAULT_ERROR_CODE,
 } = require("../utils/errors");
@@ -45,7 +46,7 @@ const deleteItem = (req, res) => {
     .then((item) => {
       if (item.owner.toString() !== _id) {
         return res
-          .status(403)
+          .status(FORBIDDEN_ERROR_CODE)
           .send({ message: "Item does not belong to user" });
       }
       res.send({ data: item });

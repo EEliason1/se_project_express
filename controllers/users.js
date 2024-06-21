@@ -4,8 +4,11 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const {
   BAD_INPUT_ERROR_CODE,
+  UNAUTHORIZED_ERROR_CODE,
   NO_RES_ERROR_CODE,
+  CONFLICT_ERROR_CODE,
   DEFAULT_ERROR_CODE,
+  MONGOOSE_ERROR_CODE,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -24,7 +27,7 @@ const getCurrentUser = (req, res) => {
   const { _id } = req.user;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(400).send("Invalid ID");
+    return res.status(BAD_INPUT_ERROR_CODE).send("Invalid ID");
   }
 
   User.findById(_id)
@@ -67,9 +70,11 @@ const createUser = (req, res) => {
               .status(BAD_INPUT_ERROR_CODE)
               .send({ message: "Invalid data." });
           }
-          if (err.code === 11000) {
+          if (err.code === MONGOOSE_ERROR_CODE) {
             console.error(err);
-            return res.status(409).send({ message: "Email already in use." });
+            return res
+              .status(CONFLICT_ERROR_CODE)
+              .send({ message: "Email already in use." });
           }
           return res
             .status(DEFAULT_ERROR_CODE)
@@ -97,7 +102,7 @@ const login = (req, res) => {
           .status(BAD_INPUT_ERROR_CODE)
           .send({ message: "Invalid data." });
       }
-      res.status(401).send({ message: err.message });
+      res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message });
     });
 };
 

@@ -84,7 +84,7 @@ const login = (req, res) => {
     return res.status(BAD_INPUT_ERROR_CODE).send({ message: "Invalid data." });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
         token: jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -99,9 +99,10 @@ const login = (req, res) => {
           .send({ message: err.message });
       }
       console.log(err);
-      return res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message });
+      return res
+        .status(DEFAULT_ERROR_CODE)
+        .send({ message: "An error has occurred on the server." });
     });
-  return null;
 };
 
 const updateUser = (req, res) => {

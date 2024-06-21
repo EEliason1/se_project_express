@@ -41,7 +41,9 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const { _id } = req.user;
 
-  Item.findByIdAndRemove(itemId)
+  console.log(itemId);
+
+  Item.findById(itemId)
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== _id) {
@@ -49,7 +51,9 @@ const deleteItem = (req, res) => {
           .status(FORBIDDEN_ERROR_CODE)
           .send({ message: "Item does not belong to user" });
       }
-      res.send({ data: item });
+      return item.deleteOne().then(() => {
+        res.status(200).send({ message: "Item deleted" });
+      });
     })
     .catch((err) => {
       console.error(err);
@@ -107,7 +111,9 @@ const dislikeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });
+      return res
+        .status(DEFAULT_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

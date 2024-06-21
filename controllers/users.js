@@ -12,17 +12,6 @@ const {
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
-
 const getCurrentUser = (req, res) => {
   const { _id } = req.user;
 
@@ -32,7 +21,9 @@ const getCurrentUser = (req, res) => {
 
   User.findById(_id)
     .orFail()
-    .then((user) => res.send(user))
+    .then((user) => {
+      res.status(200).send(user);
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
@@ -45,6 +36,8 @@ const getCurrentUser = (req, res) => {
         .status(DEFAULT_ERROR_CODE)
         .send({ message: "An error has occurred on the server." });
     });
+
+  return null;
 };
 
 const createUser = (req, res) => {
@@ -53,15 +46,15 @@ const createUser = (req, res) => {
   User.findOne({ email }).then((user) => {
     if (user) {
       return res
-        .status(409)
+        .status(CONFLICT_ERROR_CODE)
         .send({ message: "A user with that email already exists." });
     }
     bcrypt.hash(password, 10).then((hash) => {
       User.create({ name, avatar, email, password: hash })
-        .then((user) => {
-          const userObj = user.toObject();
+        .then((userNew) => {
+          const userObj = userNew.toObject();
           delete userObj.password;
-          res.status(201).send(userObj);
+          return res.status(201).send(userObj);
         })
         .catch((err) => {
           console.error(err);
@@ -71,7 +64,6 @@ const createUser = (req, res) => {
               .send({ message: "Invalid data." });
           }
           if (err.code === MONGOOSE_ERROR_CODE) {
-            console.error(err);
             return res
               .status(CONFLICT_ERROR_CODE)
               .send({ message: "Email already in use." });
@@ -81,11 +73,16 @@ const createUser = (req, res) => {
             .send({ message: "An error has occurred on the server." });
         });
     });
+    return null;
   });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
+
+  if (!password || !email) {
+    return res.status(BAD_INPUT_ERROR_CODE).send({ message: "Invalid data." });
+  }
 
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -96,14 +93,15 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
-      if (!password || !email) {
+      if (err.message === "Incorrect email or password") {
         return res
-          .status(BAD_INPUT_ERROR_CODE)
-          .send({ message: "Invalid data." });
+          .status(UNAUTHORIZED_ERROR_CODE)
+          .send({ message: err.message });
       }
-      res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message });
+      console.log(err);
+      return res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message });
     });
+  return null;
 };
 
 const updateUser = (req, res) => {
@@ -113,7 +111,7 @@ const updateUser = (req, res) => {
   User.findByIdAndUpdate(
     _id,
     { name, avatar },
-    { new: true, runValidators: true, upsert: true }
+    { new: true, runValidators: true }
   )
     .then((user) => {
       res.status(200).send(user);
@@ -134,4 +132,4 @@ const updateUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, login, getCurrentUser, updateUser };
+module.exports = { createUser, login, getCurrentUser, updateUser };

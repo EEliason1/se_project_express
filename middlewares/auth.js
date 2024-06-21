@@ -6,9 +6,9 @@ const handleAuthError = (res) => {
 };
 
 module.exports = (req, res, next) => {
-  const { authorization } = req.header;
+  const { authorization } = req.headers;
 
-  if (!authorization || !authorization.startWith("Bearer ")) {
+  if (!authorization || !authorization.startsWith("Bearer ")) {
     return handleAuthError(res);
   }
   const token = authorization.replace("Bearer ", "");

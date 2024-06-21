@@ -14,13 +14,6 @@ mongoose
   })
   .catch(console.error);
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: `66600a2ac40ba331c17526f7`,
-  };
-  next();
-});
-
 app.use(cors());
 app.use(express.json());
 app.post("/signin", login);

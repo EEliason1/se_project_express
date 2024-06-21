@@ -17,8 +17,6 @@ const getItems = (req, res) => {
 };
 
 const createItem = (req, res) => {
-  console.log(req.user._id);
-
   const { name, weather, imageUrl } = req.body;
 
   Item.create({ name, weather, imageUrl, owner: req.user._id })
@@ -40,10 +38,16 @@ const createItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  const { _id } = req.user;
 
   Item.findByIdAndRemove(itemId)
     .orFail()
     .then((item) => {
+      if (item.owner.toString() !== _id) {
+        return res
+          .status(403)
+          .send({ message: "Item does not belong to user" });
+      }
       res.send({ data: item });
     })
     .catch((err) => {

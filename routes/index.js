@@ -3,9 +3,13 @@ const userRouter = require("./users");
 const clothingItemsRouter = require("./clothingItems");
 const { NO_RES_ERROR_CODE } = require("../utils/errors");
 const { createUser, login } = require("../controllers/users");
+const {
+  validateCreateUserInfoBody,
+  validateLogInUserInfoBody,
+} = require("../middlewares/validation");
 
-router.post("/signin", login);
-router.post("/signup", createUser);
+router.post("/signin", validateLogInUserInfoBody, login);
+router.post("/signup", validateCreateUserInfoBody, createUser);
 router.use("/users", userRouter);
 router.use("/items", clothingItemsRouter);
 

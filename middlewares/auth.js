@@ -1,10 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UNAUTHORIZED_ERROR_CODE } = require("../utils/errors");
-
-const handleAuthError = (res) => {
-  res.status(UNAUTHORIZED_ERROR_CODE).send({ message: "Authorization Error" });
-};
+const { UnauthorizedError } = require("../utils/errors");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -17,8 +13,8 @@ module.exports = (req, res, next) => {
 
   try {
     payload = jwt.verify(token, JWT_SECRET);
-  } catch (err) {
-    return handleAuthError(res);
+  } catch (res) {
+    next(new UnauthorizedError("Authorization Error"));
   }
 
   req.user = payload;

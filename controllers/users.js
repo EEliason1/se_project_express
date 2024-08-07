@@ -3,20 +3,20 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const User = require("../models/user");
 const {
-  BAD_INPUT_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE,
-  NO_RES_ERROR_CODE,
-  CONFLICT_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
-  MONGOOSE_ERROR_CODE,
+  BadRequestError,
+  UnauthorizedError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
+  MongooseError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(BAD_INPUT_ERROR_CODE).send("Invalid ID");
+    next(new MongooseError("Invalid ID"));
   }
 
   User.findById(_id)
@@ -27,27 +27,23 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res.status(BAD_INPUT_ERROR_CODE).send({ message: err.message });
+        next(new BadRequestError("The id string is in an invalid format"));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
+        next(new NotFoundError("User not found"));
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: "An error has occurred on the server." });
+      next(new InternalServerError("An error has occurred on the server"));
     });
 
   return null;
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   User.findOne({ email }).then((user) => {
     if (user) {
-      return res
-        .status(CONFLICT_ERROR_CODE)
-        .send({ message: "A user with that email already exists." });
+      next(new ConflictError("A user with that email already exists"));
     }
     bcrypt.hash(password, 10).then((hash) => {
       User.create({ name, avatar, email, password: hash })
@@ -59,29 +55,23 @@ const createUser = (req, res) => {
         .catch((err) => {
           console.error(err);
           if (err.name === "ValidationError") {
-            return res
-              .status(BAD_INPUT_ERROR_CODE)
-              .send({ message: "Invalid data." });
+            next(new BadRequestError("Invalid data"));
           }
-          if (err.code === MONGOOSE_ERROR_CODE) {
-            return res
-              .status(CONFLICT_ERROR_CODE)
-              .send({ message: "Email already in use." });
+          if (err.code === 11000) {
+            next(new ConflictError("A user with that email already exists"));
           }
-          return res
-            .status(DEFAULT_ERROR_CODE)
-            .send({ message: "An error has occurred on the server." });
+          next(new InternalServerError("An error has occurred on the server"));
         });
     });
     return null;
   });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!password || !email) {
-    return res.status(BAD_INPUT_ERROR_CODE).send({ message: "Invalid data." });
+    next(new BadRequestError("Invalid data"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -93,19 +83,15 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
+      console.error(err);
       if (err.message === "Incorrect email or password") {
-        return res
-          .status(UNAUTHORIZED_ERROR_CODE)
-          .send({ message: err.message });
+        next(new UnauthorizedError("Incorrect email or password"));
       }
-      console.log(err);
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: "An error has occurred on the server." });
+      next(new InternalServerError("An error has occurred on the server"));
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { _id } = req.user;
   const { name, avatar } = req.body;
 
@@ -120,16 +106,12 @@ const updateUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_INPUT_ERROR_CODE)
-          .send({ message: "Invalid data." });
+        next(new BadRequestError("The id string is in an invalid format"));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NO_RES_ERROR_CODE).send({ message: err.message });
+        next(new NotFoundError("User not found"));
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: "An error has occurred on the server." });
+      next(new InternalServerError("An error has occurred on the server"));
     });
 };
 

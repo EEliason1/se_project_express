@@ -1,17 +1,58 @@
-const BAD_INPUT_ERROR_CODE = 400;
-const UNAUTHORIZED_ERROR_CODE = 401;
-const FORBIDDEN_ERROR_CODE = 403;
-const NO_RES_ERROR_CODE = 404;
-const CONFLICT_ERROR_CODE = 409;
-const DEFAULT_ERROR_CODE = 500;
-const MONGOOSE_ERROR_CODE = 11000;
+class BadRequestError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+  }
+}
+
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+  }
+}
+
+class ForbiddenError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+  }
+}
+
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+  }
+}
+
+class ConflictError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 409;
+  }
+}
+
+class InternalServerError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 500;
+  }
+}
+
+class MongooseError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 11000;
+  }
+}
 
 module.exports = {
-  BAD_INPUT_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE,
-  FORBIDDEN_ERROR_CODE,
-  NO_RES_ERROR_CODE,
-  CONFLICT_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
-  MONGOOSE_ERROR_CODE
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
+  MongooseError,
 };

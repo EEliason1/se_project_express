@@ -8,6 +8,12 @@ const {
   validateLogInUserInfoBody,
 } = require("../middlewares/validation");
 
+router.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+
 router.post("/signin", validateLogInUserInfoBody, login);
 router.post("/signup", validateCreateUserInfoBody, createUser);
 router.use("/users", userRouter);

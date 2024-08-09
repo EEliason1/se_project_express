@@ -1,4 +1,4 @@
-module.exports = ({ err, req, res, next }) => {
+module.exports = (err, req, res, next) => {
   console.error(err.stack || err.message);
 
   const statusCode = err.statusCode || 500;

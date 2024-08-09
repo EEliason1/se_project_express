@@ -1,17 +1,17 @@
 const Item = require("../models/clothingItem");
-const {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-  InternalServerError,
-} = require("../utils/errors");
+const { BadRequestError } = require("../utils/BadRequestError");
+const { ForbiddenError } = require("../utils/ForbiddenError");
+const { NotFoundError } = require("../utils/NotFoundError");
+const { InternalServerError } = require("../utils/InternalServerError");
 
 const getItems = (req, res, next) => {
   Item.find({})
     .then((items) => res.send(items))
-    .catch(() => {
+    .catch((err) => {
       console.error(err);
-      next(new BadRequestError("The id string is in an invalid format"));
+      return next(
+        new InternalServerError("There was an error loading the items")
+      );
     });
 };
 
@@ -25,9 +25,11 @@ const createItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
-      next(new InternalServerError("An error has occurred on the server"));
+      return next(
+        new InternalServerError("An error has occurred on the server")
+      );
     });
 };
 
@@ -41,22 +43,25 @@ const deleteItem = (req, res, next) => {
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== _id) {
-        next(new ForbiddenError("Item does not belong to user"));
-      } else if (item.owner.toString() === _id) {
-        return item.deleteOne().then(() => {
-          res.status(200).send({ message: "Item deleted" });
-        });
+        return next(new ForbiddenError("Item does not belong to user"));
       }
+      return item.deleteOne().then(() => {
+        res.status(200).send({ message: "Item deleted" });
+      });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        next(new BadRequestError("The id string is in an invalid format"));
+        return next(
+          new BadRequestError("The id string is in an invalid format")
+        );
       }
       if (err.name === "DocumentNotFoundError") {
-        next(new NotFoundError("Item not found"));
+        return next(new NotFoundError("Item not found"));
       }
-      next(new InternalServerError("An error has occurred on the server"));
+      return next(
+        new InternalServerError("An error has occurred on the server")
+      );
     });
 };
 
@@ -73,12 +78,16 @@ const likeItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        next(new BadRequestError("The id string is in an invalid format"));
+        return next(
+          new BadRequestError("The id string is in an invalid format")
+        );
       }
       if (err.name === "DocumentNotFoundError") {
-        next(new NotFoundError("Item not found"));
+        return next(new NotFoundError("Item not found"));
       }
-      next(new InternalServerError("An error has occurred on the server"));
+      return next(
+        new InternalServerError("An error has occurred on the server")
+      );
     });
 };
 
@@ -95,12 +104,16 @@ const dislikeItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        next(new BadRequestError("The id string is in an invalid format"));
+        return next(
+          new BadRequestError("The id string is in an invalid format")
+        );
       }
       if (err.name === "DocumentNotFoundError") {
-        next(new NotFoundError("Item not found"));
+        return next(new NotFoundError("Item not found"));
       }
-      next(new InternalServerError("An error has occurred on the server"));
+      return next(
+        new InternalServerError("An error has occurred on the server")
+      );
     });
 };
 

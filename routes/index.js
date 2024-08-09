@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const userRouter = require("./users");
 const clothingItemsRouter = require("./clothingItems");
-const { NO_RES_ERROR_CODE } = require("../utils/errors");
+const { NotFoundError } = require("../utils/NotFoundError");
 const { createUser, login } = require("../controllers/users");
 const {
   validateCreateUserInfoBody,
@@ -19,8 +19,6 @@ router.post("/signup", validateCreateUserInfoBody, createUser);
 router.use("/users", userRouter);
 router.use("/items", clothingItemsRouter);
 
-router.use((req, res) =>
-  res.status(NO_RES_ERROR_CODE).send({ message: "Page does not exist." })
-);
+router.use((next) => next(new NotFoundError("Page not found")));
 
 module.exports = router;

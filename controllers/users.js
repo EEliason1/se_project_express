@@ -7,14 +7,13 @@ const { UnauthorizedError } = require("../utils/UnauthorizedError");
 const { NotFoundError } = require("../utils/NotFoundError");
 const { ConflictError } = require("../utils/ConflictError");
 const { InternalServerError } = require("../utils/InternalServerError");
-const { MongooseError } = require("../utils/MongooseError");
 const { JWT_SECRET } = require("../utils/config");
 
 const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return next(new MongooseError("Invalid ID"));
+    return next(new BadRequestError("Invalid ID"));
   }
 
   return User.findById(_id)
